@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import re
+from typing import Sequence
 
 import triton
 from packaging.version import InvalidVersion, Version
@@ -45,6 +46,28 @@ def has_triton_tle(major: int = 0, minor: int = 0, patch: int = 0) -> bool:
         return True
     except ImportError:
         return False
+
+
+def has_triton_tle_attrs(
+    attrs: Sequence[str],
+    major: int = 0,
+    minor: int = 0,
+    patch: int = 0,
+) -> bool:
+    if not _triton_version_at_least(major, minor, patch):
+        return False
+    try:
+        import triton.experimental.tle.language as tle
+    except ImportError:
+        return False
+
+    for attr in attrs:
+        obj = tle
+        for part in attr.split("."):
+            if not hasattr(obj, part):
+                return False
+            obj = getattr(obj, part)
+    return True
 
 
 HAS_TLE = has_triton_tle()
